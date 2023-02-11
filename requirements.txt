@@ -1,2 +1,4 @@
 tensorflow
 scikit-learn
+jupyter_contrib_nbextensions
+torch
