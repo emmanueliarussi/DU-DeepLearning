@@ -38,7 +38,6 @@ def plotFeatureImportance(weights, labels):
 
         _ = axis.set_xticklabels(labels, rotation=90)
 
-
 #--------------------------------------------------------------------------------
 def eval_performance(model, trn_dataset, tst_dataset=None, metric_name="loss"):
     en = model.evaluate(trn_dataset)
@@ -68,7 +67,7 @@ def plot_performance(models, trn_dataset, tst_dataset=None, metric_name="loss", 
     val_mae =  [v[0] for v in performance.values()]
     test_mae = [v[1] for v in performance.values()]
 
-    plt.title(f"Comparisons of '{metric_name}' : ")
+    plt.title = f"Comparisons of '{metric_name}' : "
     plt.ylabel('Metrics')
     plt.bar(x - 0.17, val_mae, width,  label= f'Training {metric_name}')
     plt.bar(x + 0.17, test_mae, width, label= f'Test {metric_name}')
