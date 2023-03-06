@@ -150,12 +150,26 @@ def compile_fit(model, window_trn=None, window_tst= None, opt=None, patience=3, 
     return history
 
 #--------------------------------------------------------------------------------
-# This commonLayer, a layer that is common to all models
-def getCommonLayer(ouput_len, ouput_feat_len, previousLayer=None):
+'''
+    This commonLayer, a layer that is common to all models given output_len, out_features length.
+
+    suppose if you are building a prediction, forecasting model say
+    ouput_len      = 4
+    ouput_feat_len = 2
+
+    This means your output will have a final linear layer of length: 
+            op_len = ouput_len * ouput_feat_len;
+    And your will have linear activation (sometimes relu makes sense or custom activation)
+
+    And you will have to reshape to compare to actual output. Instead of creating this last year,
+    you may choose to call this function for convenience.
+
+'''
+def getCommonLayer(ouput_len, ouput_feat_len, previousLayer=None, activation="linear"):
     op_len = ouput_len * ouput_feat_len;
     commonLayer = [
         # Shape => [batch, 1, out_len * #features]
-        tf.keras.layers.Dense( op_len, activation='linear', kernel_initializer=tf.initializers.zeros()),
+        tf.keras.layers.Dense( op_len, activation=activation, kernel_initializer=tf.initializers.zeros()),
         
         # Shape => [batch, out_steps, features]
         tf.keras.layers.Reshape([ouput_len, ouput_feat_len])

@@ -67,7 +67,7 @@ def plot_performance(models, trn_dataset, tst_dataset=None, metric_name="loss", 
     val_mae =  [v[0] for v in performance.values()]
     test_mae = [v[1] for v in performance.values()]
 
-    plt.title = f"Comparisons of '{metric_name}' : "
+    plt.title( f"Comparisons of '{metric_name}' : ")
     plt.ylabel('Metrics')
     plt.bar(x - 0.17, val_mae, width,  label= f'Training {metric_name}')
     plt.bar(x + 0.17, test_mae, width, label= f'Test {metric_name}')
@@ -82,10 +82,13 @@ def plot_predictions(ydf, yhatdf, start=0, end=1024*1024, title=""):
 
     for c in ydf.columns:
         y1, p1 = ydf[c][start:end], yhatdf[c][start:end]
-        plt.scatter( y1.index, y1, edgecolors='k', marker='o', label= f'{c}: y',    c='#2ca02c' )
-        plt.scatter( p1.index, p1, edgecolors='k', marker='X', label= f'{c}: yhat', c='#ff7f0e')
+        #plt.scatter( y1.index, y1, edgecolors='k', marker='o', label= f'{c}: y',    c='#2ca02c' )
+        #plt.scatter( p1.index, p1, edgecolors='k', marker='X', label= f'{c}: yhat', c='#ff7f0e')
 
-        plt.title = title
+        plt.plot( y1.index, y1, '-.', label= f'{c}: y',    c='#2ca02c' )
+        plt.plot( p1.index, p1, '-.', label= f'{c}: yhat', c='#ff0000')
+
+        plt.title( title)
         plt.legend()
         plt.show()
 
@@ -94,9 +97,10 @@ def plot_predictions(ydf, yhatdf, start=0, end=1024*1024, title=""):
 def predict_and_plot( model, window_trn, window_tst, howmany=1024* 1024,
                         plot_start=0, plot_end=1024*1024, df=None, scaler=None, label_slice=None):
     y, yhat = None, None
-    y, yhat = ts_utils.model_predict( model , window_trn,  y, yhat, howmany)
     if (window_tst is not None):
         y, yhat = ts_utils.model_predict( model , window_tst,  y, yhat, howmany)
+    else:
+        y, yhat = ts_utils.model_predict( model , window_trn,  y, yhat, howmany)
 
     if ( df is not None):
         ydf = ts_utils.inverse_transform(y, scaler, label_slice, df)
