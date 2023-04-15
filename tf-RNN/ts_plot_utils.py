@@ -8,8 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
-import pickle
-import ts_utils
+import pickle, ts_utils, datetime
 
 
 #--------------------------------------------------------------------------------
@@ -53,6 +52,9 @@ def eval_performance(model, trn_dataset, tst_dataset=None, metric_name="loss"):
 
 performance = {}
 def plot_performance(models, trn_dataset, tst_dataset=None, metric_name="loss", performance = {}, reeval=0):
+
+    print("** DEPRECATED ... use plot_performance1")
+
     for m in models:
         if (not reeval and performance.get(m.name, None)):
             print(f"Performance for {m.name} exists")
@@ -68,7 +70,7 @@ def plot_performance(models, trn_dataset, tst_dataset=None, metric_name="loss", 
     val_mae =  [v[0] for v in performance.values()]
     test_mae = [v[1] for v in performance.values()]
 
-    plt.title = f"Comparisons of '{metric_name}' : "
+    plt.title( f"Comparisons of '{metric_name}' : ")
     plt.ylabel('Metrics')
     plt.bar(x - 0.17, val_mae, width,  label= f'Training {metric_name}')
     plt.bar(x + 0.17, test_mae, width, label= f'Test {metric_name}')
@@ -77,16 +79,124 @@ def plot_performance(models, trn_dataset, tst_dataset=None, metric_name="loss", 
     
     return performance
 
+def plot_performance1(models, trn_dataset, tst_dataset=None, metric_name="loss", 
+                        reeval=0, columns=None):
+    if (len(models) <= 0 ):
+        print("No models to plot?")
+        return;
+
+    trn_mae = []
+    tst_mae = []
+    for m, modelp in models.items():
+        model = modelp['model']
+        print(f"Now Compiling {len( models)} {model.name} {model.built}")
+
+        if (not model.built):
+            trn_mae.append(-0.01 )
+            tst_mae.append(-0.01 )
+            continue
+
+        trn_metrics = modelp.get("train_eval", None)
+        tst_metrics = modelp.get("test_eval", None)
+
+        if ( trn_metrics is None or reeval):
+            t1= datetime.datetime.now()
+            if ( modelp.get('train_predict', None) and not reeval):
+                y, yhat = modelp['train_predict']
+            else:
+                y, yhat = ts_utils.model_predict( model , trn_dataset)
+                modelp['train_predict'] = [y, yhat]
+
+            # Compute MSE manually
+            t2= datetime.datetime.now()
+            modelp['train_eval_time'] = t2-t1
+
+            e1= y - yhat
+            n1=np.sum(e1**2, axis=0)
+            d1=np.sum((y - np.mean(y, axis=0))**2, axis=0)
+            r2=1-(n1/d1)
+            edf = pd.DataFrame(e1, columns=columns)
+            edfs = edf.describe()
+            edfs.loc['R-sq'] = r2
+
+            err = np.mean((y-yhat)**2)
+            modelp['train_eval'] = err
+            # Following would do the same
+            #en = model.evaluate(trn_dataset)
+            #mi = max(0, model.metrics_names.index(metric_name))
+            #modelp['train_eval1'] = np.array(en).flat[mi]
+
+            trn_metrics = modelp['train_eval']
+
+            modelp['train_error_df'] = edf
+            modelp['train_error_summary'] = edfs
+
+
+        if ( tst_metrics is None or reeval):
+            if ( tst_dataset ):
+                t1= datetime.datetime.now()
+                if ( modelp.get('test_predict', None) and not reeval):
+                    y, yhat = modelp['test_predict']
+                else:
+                    y, yhat = ts_utils.model_predict( model , tst_dataset)
+                modelp['test_predict'] = [y, yhat]
+
+                # Compute MSE manually
+
+                t2= datetime.datetime.now()
+                modelp['test_eval_time'] = t2-t1
+
+                e1= y - yhat
+                n1=np.sum(e1**2, axis=0)
+                d1=np.sum((y - np.mean(y, axis=0))**2, axis=0)
+                r2=1-(n1/d1)
+                edf = pd.DataFrame(e1, columns=columns)
+                edfs = edf.describe()
+                edfs.loc['R-sq'] = r2
+
+                err = np.mean((y-yhat)**2)
+                modelp['test_eval'] = err
+                # Following would do the same
+                #en = model.evaluate(tst_dataset)
+                #mi = max(0, model.metrics_names.index(metric_name))
+                #modelp['test_eval1'] = np.array(en).flat[mi]
+                tst_metrics = modelp['test_eval']
+
+                modelp['test_error_df'] = edf
+                modelp['test_error_summary'] = edfs
+
+        atrn =  trn_metrics if trn_metrics is not None  else -0.01
+        atst =  tst_metrics if tst_metrics is not None  else -0.01
+        trn_mae.append(atrn )
+        tst_mae.append(atrn )
+
+    x = np.arange(len(models))
+    width = 0.3
+
+    plt.title( f"Comparisons of '{metric_name}' : ")
+    plt.ylabel('Metrics')
+    plt.bar(x - 0.17, trn_mae, width, label= f'Training {metric_name}')
+    plt.bar(x + 0.17, tst_mae, width, label= f'Test {metric_name}')
+    ticks = [ k+"\n"+models[k]['compile_time'] for k in models]
+    plt.xticks(ticks=x, labels=ticks, rotation=45)
+    _ = plt.legend()
+    
+    return models
+
+
 #--------------------------------------------------------------------------------
 def plot_predictions(ydf, yhatdf, start=0, end=1024*1024, title=""):
     plt.figure(figsize=(14, 4))
 
     for c in ydf.columns:
         y1, p1 = ydf[c][start:end], yhatdf[c][start:end]
-        plt.scatter( y1.index, y1, edgecolors='k', marker='o', label= f'{c}: y',    c='#2ca02c' )
-        plt.scatter( p1.index, p1, edgecolors='k', marker='X', label= f'{c}: yhat', c='#ff7f0e')
+        #plt.scatter( y1.index, y1, edgecolors='k', marker='o', label= f'{c}: y',    c='#2ca02c' )
+        #plt.scatter( p1.index, p1, edgecolors='k', marker='X', label= f'{c}: yhat', c='#ff7f0e')
 
-        plt.title = title
+        plt.plot( y1.index, y1, '-.', label= f'{c}: y',    c='#2ca02c' )
+        plt.plot( p1.index, p1, '-.', label= f'{c}: yhat', c='#ff0000')
+
+        plt.title( title)
         plt.legend()
         plt.show()
 
@@ -95,9 +205,10 @@ def plot_predictions(ydf, yhatdf, start=0, end=1024*1024, title=""):
 def predict_and_plot( model, window_trn, window_tst, howmany=1024* 1024,
                         plot_start=0, plot_end=1024*1024, df=None, scaler=None, label_slice=None):
     y, yhat = None, None
-    y, yhat = ts_utils.model_predict( model , window_trn,  y, yhat, howmany)
     if (window_tst is not None):
         y, yhat = ts_utils.model_predict( model , window_tst,  y, yhat, howmany)
+    else:
+        y, yhat = ts_utils.model_predict( model , window_trn,  y, yhat, howmany)
 
     if ( df is not None):
         ydf = ts_utils.inverse_transform(y, scaler, label_slice, df)

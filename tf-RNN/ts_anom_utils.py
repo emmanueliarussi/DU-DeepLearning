@@ -23,37 +23,52 @@ def computeFScore(y, yhat):
     broken pairs columns are  "x, y, resid, fitness, threshhold, ranking"
     This will return all sensors whose standardized error exceeds threshhold value
 '''
-def get_brknpairs(r, fscore, standardized_err, thr=1.4, topn=10):
+def get_brknpairs(r, fscore, standardized_err, errdf, thr=1.4, topn=10):
     r1  = round(r, 4)
     se  =  np.round(abs(standardized_err.loc[r.name]), 4)
     idx = abs(se.values).argsort()
 
     ret = [[c, c, r1[c], fscore[c], thr, se[c]] for c in se[idx][::-1][:topn].index if abs(se[c]) > thr ]
-    top = [c for c in se[idx][::-1][:topn].index]
+    top = [[c, se[c]] for c in se[idx][::-1][:topn].index]
     return  len(ret), ret, top
 
 '''~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     compute Anomaly scores
     ydf: original Y Values
     pdf: predicted values
+
+    You must always pass escaler unless you are using validation data to get the estimate of the error
+
+    returns: 
+        broken-pairs columns are  "x, y, resid, fitness, threshhold, ranking"
 '''
-def compute_scores(y: pd.DataFrame, yhat: pd.DataFrame, scaler=None, top_n=15, file=None): 
+def compute_scores(y: pd.DataFrame, yhat: pd.DataFrame, errorDF= None, escaler=None, top_n=15, fscore=None, file=None): 
     # 1. Compute the Absolute Error data frame
     resid = y - yhat
     error = abs(resid)
 
     # 2. Lets scale if scaler is not given => assuming this is training errors
+    
     if ( escaler is None ):
         escaler = StandardScaler().fit(error)
+        standardized_err = pd.DataFrame(escaler.transform(error), columns=error.columns, index=resid.index)
 
-    standardized_err = pd.DataFrame(escaler.transform(error), columns=error.columns, index=resid.index)
+        # Compute the error statistics only if escaler is None
+        fscore = computeFScore(y, yhat)
+
+        errorDF = error.describe()
+        errorDF.loc['fscore'] = fscore
+        errorDF.loc['std_mean'] = standardized_err.mean()
+        errorDF.loc['std_std'] = standardized_err.std()
+    else:
+        standardized_err = pd.DataFrame(escaler.transform(error), columns=error.columns, index=resid.index)
+
 
     # 4. Compute the Frobenius norm 
     score = np.linalg.norm(error.values ,axis=1)
     norm_score = np.linalg.norm(standardized_err ,axis=1)
 
-    fscore = computeFScore(y, yhat)
-    appl = resid.apply(get_brknpairs, args=( fscore, standardized_err, 1.4, 20), axis=1)
+    appl = resid.apply(get_brknpairs, args=( fscore, standardized_err, errorDF, 1.4, 20), axis=1)
 
 
     # 6. put them all together
@@ -65,5 +80,20 @@ def compute_scores(y: pd.DataFrame, yhat: pd.DataFrame, scaler=None, top_n=15, f
     ret['brokenInvariants'] = [c[1] for c  in appl.values]
     ret['brokenSensors']    = [c[2] for c  in appl.values]
 
-    return ret, escaler, error, fscore
+    if ( file is not None):
+        errorDF.to_csv(f'{file}_errordf.csv')
+        pickle.dump(escaler, open(f'{file}_escaler.pkl', 'wb'))
+
+    return ret, error, standardized_err, errorDF, escaler, fscore
+
+# The way how to use this 
+'''
+    Split data into train, validation, and test data
+    Train on "training"
+    Compute yhat on validation data
+    call compute_scores on y and yhat of validation data.
+    Use the escaler to detect anomalies on test data
+    => COmpute the F-scrore, precision, recall scores
+''';
+
 
