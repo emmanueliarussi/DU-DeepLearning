@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
-import pickle
+import pickle, datetime
 
 mpl.rcParams['figure.figsize'] = (14, 4)
 mpl.rcParams['axes.grid'] = True
@@ -165,7 +165,7 @@ def compile_fit(model, window_trn=None, window_tst= None, opt=None, patience=3, 
     you may choose to call this function for convenience.
 
 '''
-def getCommonLayer(ouput_len, ouput_feat_len, previousLayer=None, activation="linear"):
+def getCommonLayer(ouput_len, ouput_feat_len, previousLayer=None, activation="relu"):
     op_len = ouput_len * ouput_feat_len;
     commonLayer = [
         # Shape => [batch, 1, out_len * #features]

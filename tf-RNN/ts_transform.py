@@ -91,13 +91,21 @@ class myColumnTransformer(ColumnTransformer):
     @staticmethod
     def scale_df(df, num_unique=5, numericScaler= StandardScaler, numerics = None, categorical = None):
         # Detect numerics if both not given; if one is given - we assume other is not required
+
+        assert len(df) > 0, "Data frame is empty"
+
         if ( numerics is None and categorical is None):
             numerics, categorical = myColumnTransformer.find_cat_numerics_names(df, num_unique)
 
+        nts = [(n    ,  numericScaler(), [n] ) for n in numerics]
+        if (len(categorical) > 0):
+            cts = [(f"cats_{n}", OneHotEncoder(sparse=False, handle_unknown="ignore"), [n]) for n in categorical]
+        else:
+            cts = []
+
         scaler = myColumnTransformer( transformers= 
-                [(n  ,  numericScaler(), [n] ) for n in numerics] +
-                [("categorical",  OneHotEncoder(sparse=False, handle_unknown="ignore"), categorical)]
-            , remainder='drop',
+                 nts + cts,
+            remainder='drop',
             verbose_feature_names_out = False)
 
         x = scaler.fit_transform(df)
@@ -105,10 +113,6 @@ class myColumnTransformer(ColumnTransformer):
         scaler.categorical = categorical
 
         return scaler, pd.DataFrame(x, columns= scaler.out_feature_names())
-
-
-
-
 
 '''
     Here is a test and how to use it.
@@ -123,11 +127,11 @@ def testMyColumnTransformer():
     df1 = df[nums[1:5]+cats]
     display(df1[0:4])
     '''
-        time       x1	       x2         x3	       x4          x5       y  x61
+        time       x1	       x2         x3	       x4          x5           y  x61
     --------------- -------     ---------   --------    --------    ---------   -  ---
     0	5/1/99 0:00	0.376665	-4.596435	-4.095756	13.497687	-0.118830	0	0
     1	5/1/99 0:02	0.475720	-4.542502	-4.018359	16.230659	-0.128733	0	0
-    2	5/1/99 0:04	0.363848	-4.681394	-4.353147	14.127997	-0.138636	0	0
+    2	5/1/99 0:04	0.363848	-4.681394	-4.353147	14.127997	-0.138636	1	1
     3	5/1/99 0:06	0.301590	-4.758934	-4.023612	13.161566	-0.148142	0	0
     4	5/1/99 0:08	0.265578	-4.749928	-4.333150	15.267340	-0.155314	0	0
     '''
