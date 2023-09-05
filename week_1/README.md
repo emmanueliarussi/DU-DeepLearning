@@ -2,6 +2,7 @@
 
 ## Live session plan
 
+|                | Schedule                                                    |
 |----------------|-------------------------------------------------------------|
 |00:00 - 00:10   |Answer general questions about asynchronous material for the week.|
 |00:10 - 00:20   |Briefly recap key concepts for the day: Overfitting, Underfitting, Bias, Variance, and Neural Networks.|
