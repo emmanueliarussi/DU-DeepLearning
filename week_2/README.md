@@ -13,3 +13,10 @@
 |01:10 - 01:15   |[Coding Exercise Part 2: NN from scratch in PyTorch.](https://colab.research.google.com/github/emmanueliarussi/DU-DeepLearning/blob/master/week_2/Coding_Exercise_Part_2_NN_From_Scratch_in_PyTorch.ipynb) |
 |01:15 - 01:45   |Work Time: Students work on Coding Exercise 2.                  |
 |01:45 - 01:50   |Review and Discuss: Solutions for Coding Exercise 2. Wrap up the session.       |
+
+
+## Solutions
+
+* [Coding Exercise Part 1: NN from scratch in Numpy.](https://colab.research.google.com/github/emmanueliarussi/DU-DeepLearning/blob/master/week_2/SOLVED_Coding_Exercise_Part_1_NN_From_Scratch_in_Numpy.ipynb)
+
+* [Coding Exercise Part 2: NN from scratch in PyTorch.](https://colab.research.google.com/github/emmanueliarussi/DU-DeepLearning/blob/master/week_2/SOLVED_Coding_Exercise_Part_2_NN_From_Scratch_in_PyTorch.ipynb)
