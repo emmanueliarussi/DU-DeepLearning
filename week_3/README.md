@@ -10,6 +10,6 @@
 |00:20 - 00:50   |Work Time: Students work on Coding Exercise 1.                  |
 |00:50 - 01:00   |Review and Discuss: Solutions for Coding Exercise 1.            |
 |01:00 - 01:10   |Break.            |
-|01:10 - 01:15   |[Coding Exercise Part 2: The Effect of Activation Functions.](https://colab.research.google.com/github/emmanueliarussi/DU-DeepLearning/blob/master/week_2/Coding_Exercise_Part_2_The_Effect_of_Activation_Functions.ipynb) |
+|01:10 - 01:15   |[Coding Exercise Part 2: The Effect of Activation Functions.](https://colab.research.google.com/github/emmanueliarussi/DU-DeepLearning/blob/main/week_3/Coding_Exercise_Part_2_The_Effect_of_Activation_Functions.ipynb) |
 |01:15 - 01:45   |Work Time: Students work on Coding Exercise 2.                  |
 |01:45 - 01:50   |Review and Discuss: Solutions for Coding Exercise 2. Wrap up the session.       |
